@@ -22,6 +22,7 @@ class WordGenerator(nn.Module):
         self.lstm_2 = nn.LSTMCell(self.hidden_dim, self.hidden_dim)
         self.lstm_3 = nn.LSTMCell(self.hidden_dim, self.hidden_dim)
         self.lstm_4 = nn.LSTMCell(self.hidden_dim, self.hidden_dim)
+        self.lstm_5 = nn.LSTMCell(self.hidden_dim, self.hidden_dim)
 
         # make linear layer
         self.linear = nn.Linear(self.hidden_dim, self.num_classes)
@@ -45,9 +46,11 @@ class WordGenerator(nn.Module):
         cs_lstm_3 = torch.zeros(x.size(0), self.hidden_dim).to(self.device)
         hs_lstm_4 = torch.zeros(x.size(0), self.hidden_dim).to(self.device)
         cs_lstm_4 = torch.zeros(x.size(0), self.hidden_dim).to(self.device)
+        hs_lstm_5 = torch.zeros(x.size(0), self.hidden_dim).to(self.device)
+        cs_lstm_5 = torch.zeros(x.size(0), self.hidden_dim).to(self.device)
 
         # initialize weights
-        for lay in [hs_lstm_1, cs_lstm_1, hs_lstm_2, cs_lstm_2]:
+        for lay in [hs_lstm_1, cs_lstm_1, hs_lstm_2, cs_lstm_2, hs_lstm_3, cs_lstm_3, hs_lstm_4, cs_lstm_4, hs_lstm_5, cs_lstm_5]:
             nn.init.kaiming_normal_(lay)
 
         for i in range(self.sequence_len):
@@ -55,7 +58,8 @@ class WordGenerator(nn.Module):
             hs_lstm_2, cs_lstm_2 = self.lstm_2(hs_lstm_1, (hs_lstm_2, cs_lstm_2))
             hs_lstm_3, cs_lstm_3 = self.lstm_3(hs_lstm_2, (hs_lstm_3, cs_lstm_3))
             hs_lstm_4, cs_lstm_4 = self.lstm_4(hs_lstm_3, (hs_lstm_4, cs_lstm_4))
+            hs_lstm_5, cs_lstm_5 = self.lstm_5(hs_lstm_4, (hs_lstm_5, cs_lstm_5))
 
-        out = self.linear(hs_lstm_4)
+        out = self.linear(hs_lstm_5)
         
         return out

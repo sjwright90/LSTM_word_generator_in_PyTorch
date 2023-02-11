@@ -200,7 +200,7 @@ if __name__ == "__main__":
                 model.load_state_dict(torch.load("weights/wordGen_model.pt"))
 
                 # text generator
-                execution.generator(model, sequences, idx_to_char, 100)
+                execution.generator(model, sequences, idx_to_char, 20)
         
         # if you will train the model
         else:
@@ -221,4 +221,4 @@ if __name__ == "__main__":
             model.load_state_dict(torch.load("weights/wordGen_model.pt"))
 
             # text generator
-            execution.generator(model, sequences, idx_to_char, 100)
+            execution.generator(model, sequences, idx_to_char, 20)
