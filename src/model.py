@@ -12,7 +12,6 @@ class WordGenerator(nn.Module):
         self.input_size = vocab_size
         self.num_classes = vocab_size
         self.sequence_len = args.window
-        self.num_layers = args.num_layers
 
         # make embeddings
         self.embeddings = nn.Embedding(vocab_size, self.hidden_dim, padding_idx=0)
@@ -21,6 +20,8 @@ class WordGenerator(nn.Module):
 
         self.lstm_1 = nn.LSTMCell(self.hidden_dim, self.hidden_dim)
         self.lstm_2 = nn.LSTMCell(self.hidden_dim, self.hidden_dim)
+        self.lstm_3 = nn.LSTMCell(self.hidden_dim, self.hidden_dim)
+        self.lstm_4 = nn.LSTMCell(self.hidden_dim, self.hidden_dim)
 
         # make linear layer
         self.linear = nn.Linear(self.hidden_dim, self.num_classes)
@@ -40,6 +41,10 @@ class WordGenerator(nn.Module):
         cs_lstm_1 = torch.zeros(x.size(0), self.hidden_dim).to(self.device)
         hs_lstm_2 = torch.zeros(x.size(0), self.hidden_dim).to(self.device)
         cs_lstm_2 = torch.zeros(x.size(0), self.hidden_dim).to(self.device)
+        hs_lstm_3 = torch.zeros(x.size(0), self.hidden_dim).to(self.device)
+        cs_lstm_3 = torch.zeros(x.size(0), self.hidden_dim).to(self.device)
+        hs_lstm_4 = torch.zeros(x.size(0), self.hidden_dim).to(self.device)
+        cs_lstm_4 = torch.zeros(x.size(0), self.hidden_dim).to(self.device)
 
         # initialize weights
         for lay in [hs_lstm_1, cs_lstm_1, hs_lstm_2, cs_lstm_2]:
@@ -48,5 +53,9 @@ class WordGenerator(nn.Module):
         for i in range(self.sequence_len):
             hs_lstm_1, cs_lstm_1 = self.lstm_1(out[i], (hs_lstm_1, cs_lstm_1))
             hs_lstm_2, cs_lstm_2 = self.lstm_2(hs_lstm_1, (hs_lstm_2, cs_lstm_2))
+            hs_lstm_3, cs_lstm_3 = self.lstm_3(hs_lstm_2, (hs_lstm_3, cs_lstm_3))
+            hs_lstm_4, cs_lstm_4 = self.lstm_4(hs_lstm_3, (hs_lstm_4, cs_lstm_4))
 
-        out = self.linear(hs_lstm_2)
+        out = self.linear(hs_lstm_4)
+        
+        return out

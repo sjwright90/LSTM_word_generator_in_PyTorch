@@ -52,13 +52,13 @@ class Execution:
     def train(self, args):
 
         # Initialize model
-        model = TextGenerator(args, self.vocab_size)
+        model = WordGenerator(args, self.vocab_size)
         if torch.has_mps:
             devicemps = torch.device("mps")
             model.to(devicemps)
 
         # Initialize optimizer
-        optimizer = optim.RMSprop(model.parameters(), lr=self.learning_rate)
+        optimizer = optim.Adam(model.parameters(), lr=self.learning_rate)
 
         # Defining number of batches
         num_batches = int(len(self.sequences)/self.batch_size)
@@ -89,6 +89,7 @@ class Execution:
 
                 # feed the model
                 y_pred = model(x)
+
                 # calculate loss
                 loss = F.cross_entropy(y_pred, y.squeeze())
                 # clean the gradients
@@ -99,10 +100,14 @@ class Execution:
                 optimizer.step()
             print("Epoch: %d,  loss: %.5f " % (epoch, loss.item()))
         
-        torch.save(model.state_dict(), "weights/textGen_model.pt")
+        torch.save(model.state_dict(), "weights/wordGen_model.pt")
         
     @staticmethod
     def generator(model, sequences, idx_to_char, n_chars):
+
+        if torch.has_mps:
+            devicemps = torch.device("mps")
+            model.to(devicemps)
 
         # set model in eval mode
         model.eval()
@@ -118,7 +123,7 @@ class Execution:
 
         #use dictionaries to print the pattern
         print("\nPattern: \n")
-        print("".join(idx_to_char[value] for value in pattern), "\"")
+        print("".join(idx_to_char[value] + " " for value in pattern), "\"")
 
         # In full_prediction we will save the complete prediction
         full_prediction = pattern.copy()
@@ -129,21 +134,27 @@ class Execution:
         for i in range(n_chars):
 
             # The numpy patterns is transformed into a tesor-type and reshaped
-            pattern = torch.from_numpy(pattern).type(torch.LongTensor)
+            pattern = torch.from_numpy(pattern).type(torch.LongTensor).to(devicemps)
             pattern = pattern.view(1,-1)
 
             # Make prediction given pattern
             prediction = model(pattern)
             # apply softmax to prediction tensor
             prediction = softmax(prediction)
+            
 
             # convert prediction tensor to numpy array
+            prediction = prediction.to("cpu")
             prediction = prediction.squeeze().detach().numpy()
-
+            
             # take idx with highest possibility
-            arg_max = np.argmax(prediction)
+            try:
+                arg_max = np.random.choice(list(idx_to_char.keys()), p = prediction)
+            except:
+                arg_max = np.argmax(prediction)
 
             # The current pattern tensor is transformed into numpy array
+            pattern = pattern.to("cpu")
             pattern = pattern.squeeze().detach().numpy()
 
             # The window is sliced 1 character to the right
@@ -156,5 +167,50 @@ class Execution:
             full_prediction = np.append(full_prediction, arg_max)
             
         print("Prediction: \n")
-        print("".join([idx_to_char[value] for value in full_prediction]), "\"")
+        print("".join([idx_to_char[value] + " " for value in full_prediction]), "\"")
 
+
+if __name__ == "__main__":
+
+        args = parameter_parser()
+
+        # If you alreeady have trained weights
+        if args.load_model == True:
+            if os.path.exists(args.model):
+
+                # load and prepare sequence
+                execution = Execution(args)
+                execution.prepare_data()
+
+                sequences = execution.sequences
+                idx_to_char = execution.idx_to_char
+                vocab_size = execution.vocab_size
+
+                # initialize the model
+                model = WordGenerator(args, vocab_size)
+                # load weights
+                model.load_state_dict(torch.load("weights/wordGen_model.pt"))
+
+                # text generator
+                execution.generator(model, sequences, idx_to_char, 100)
+        
+        # if you will train the model
+        else:
+            # load and prep sequence
+            execution = Execution(args)
+            execution.prepare_data()
+
+            # Training model
+            execution.train(args)
+
+            sequences = execution.sequences
+            idx_to_char = execution.idx_to_char
+            vocab_size = execution.vocab_size
+
+            # initialize model
+            model = WordGenerator(args, vocab_size)
+            #load weights
+            model.load_state_dict(torch.load("weights/wordGen_model.pt"))
+
+            # text generator
+            execution.generator(model, sequences, idx_to_char, 100)
