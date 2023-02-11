@@ -66,6 +66,8 @@ class Execution:
         # set model in training mode
         model.train()
 
+        loss_log = [np.inf]
+
         for epoch in range(self.num_epochs):
             # mini batches
             for i in range(num_batches):
@@ -96,11 +98,17 @@ class Execution:
                 optimizer.zero_grad()
                 # back propogate
                 loss.backward()
+                # clip gradient
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 3)
                 # update parameters
                 optimizer.step()
             print("Epoch: %d,  loss: %.5f " % (epoch, loss.item()))
-        
-        torch.save(model.state_dict(), "weights/wordGen_model.pt")
+            loss_score = loss.item()
+            if np.isnan(loss_score):
+                break
+            loss_log = loss_log + [loss_score]
+            if loss_log[-1] < loss_log[-2]:
+                torch.save(model.state_dict(), "weights/wordGen_model.pt")
         
     @staticmethod
     def generator(model, sequences, idx_to_char, n_chars):
