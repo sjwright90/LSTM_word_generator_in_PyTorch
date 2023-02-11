@@ -12,5 +12,6 @@ def parameter_parser():
     parser.add_argument("--load_model", dest="load_model", type=bool, default=False)
     parser.add_argument("--model", dest="model", type=str, default='weights/textGenerator.pt')
     parser.add_argument("--training_file", dest="file", type=str, default="data/text.txt")
+
 						 
     return parser.parse_args()
