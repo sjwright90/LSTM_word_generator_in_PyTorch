@@ -22,6 +22,8 @@ class Execution:
         self.batch_size = args.batch_size
         self.learning_rate = args.learning_rate
         self.num_epochs = args.num_epochs
+        self.char_gen = args.char_gen
+        self.model_save = args.model
 
         self.targets = None
         self.sequences = None
@@ -29,13 +31,24 @@ class Execution:
         self.char_to_idx = None
         self.idx_to_char = None
 
+        if torch.has_mps:
+            self.device = torch.device("mps")
+        elif torch.has_cuda:
+            self.device = torch.device("cuda")
+        else:
+            self.device = torch.device("cpu")
+
     def prepare_data(self):
 
         # initialize preprocessor object
         preprocessing = Preprocessing()
 
-        # file loaded and split by char
-        text = preprocessing.read_file(self.file)
+        # file loaded and split by char or word
+        # depending on input
+        if self.char_gen:
+            text = preprocessing.read_file_char(self.file)
+        else:
+            text = preprocessing.read_file_word(self.file)
 
         # create two dictionaries from the text
         # char_to_idx and idx_to_char
@@ -53,9 +66,7 @@ class Execution:
 
         # Initialize model
         model = WordGenerator(args, self.vocab_size)
-        if torch.has_mps:
-            devicemps = torch.device("mps")
-            model.to(devicemps)
+        model.to(device=self.device)
 
         # Initialize optimizer
         optimizer = optim.Adam(model.parameters(), lr=self.learning_rate)
@@ -82,12 +93,8 @@ class Execution:
                     
                 # convert numpy array to Torch tensor
 
-                x = torch.from_numpy(x_batch).type(torch.LongTensor)
-                y = torch.from_numpy(y_batch).type(torch.LongTensor)
-
-                if devicemps:
-                    x = x.to(devicemps)
-                    y = y.to(devicemps)
+                x = torch.from_numpy(x_batch).type(torch.LongTensor).to(device=self.device)
+                y = torch.from_numpy(y_batch).type(torch.LongTensor).to(device=self.device)
 
                 # feed the model
                 y_pred = model(x)
@@ -99,7 +106,7 @@ class Execution:
                 # back propogate
                 loss.backward()
                 # clip gradient
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 3)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 5)
                 # update parameters
                 optimizer.step()
             print("Epoch: %d,  loss: %.5f " % (epoch, loss.item()))
@@ -108,14 +115,12 @@ class Execution:
                 break
             loss_log = loss_log + [loss_score]
             if loss_log[-1] < loss_log[-2]:
-                torch.save(model.state_dict(), "weights/wordGen_model.pt")
+                torch.save(model.state_dict(), self.model_save)
         
     @staticmethod
     def generator(model, sequences, idx_to_char, n_chars):
 
-        if torch.has_mps:
-            devicemps = torch.device("mps")
-            model.to(devicemps)
+        model.to(device=Execution.device)
 
         # set model in eval mode
         model.eval()
@@ -130,8 +135,12 @@ class Execution:
         pattern = sequences[start]
 
         #use dictionaries to print the pattern
-        print("\nPattern: \n")
-        print("".join(idx_to_char[value] + " " for value in pattern), "\"")
+        if Execution.char_gen:
+            print("\nPattern: \n")
+            print("".join(idx_to_char[value] for value in pattern), "\"")
+        else:
+            print("\nPattern: \n")
+            print("".join(idx_to_char[value] + " " for value in pattern), "\"")
 
         # In full_prediction we will save the complete prediction
         full_prediction = pattern.copy()
@@ -142,7 +151,7 @@ class Execution:
         for i in range(n_chars):
 
             # The numpy patterns is transformed into a tesor-type and reshaped
-            pattern = torch.from_numpy(pattern).type(torch.LongTensor).to(devicemps)
+            pattern = torch.from_numpy(pattern).type(torch.LongTensor).to(Execution.device)
             pattern = pattern.view(1,-1)
 
             # Make prediction given pattern
@@ -155,7 +164,10 @@ class Execution:
             prediction = prediction.to("cpu")
             prediction = prediction.squeeze().detach().numpy()
             
-            # take idx with highest possibility
+            # randomly select best choice from probability distribution
+            # of predicted classes
+            # if probability distribution is not appropriate
+            # for np.random.choice then take highest probability
             try:
                 arg_max = np.random.choice(list(idx_to_char.keys()), p = prediction)
             except:
@@ -173,9 +185,13 @@ class Execution:
 
             # The full prediction is saved
             full_prediction = np.append(full_prediction, arg_max)
-            
-        print("Prediction: \n")
-        print("".join([idx_to_char[value] + " " for value in full_prediction]), "\"")
+
+        if Execution.char_gen:
+                print("Prediction: \n")
+                print("".join([idx_to_char[value] for value in full_prediction]), "\"")
+        else:
+            print("Prediction: \n")
+            print("".join([idx_to_char[value] + " " for value in full_prediction]), "\"")
 
 
 if __name__ == "__main__":
@@ -197,7 +213,7 @@ if __name__ == "__main__":
                 # initialize the model
                 model = WordGenerator(args, vocab_size)
                 # load weights
-                model.load_state_dict(torch.load("weights/wordGen_model.pt"))
+                model.load_state_dict(torch.load(args.model))
 
                 # text generator
                 execution.generator(model, sequences, idx_to_char, 20)

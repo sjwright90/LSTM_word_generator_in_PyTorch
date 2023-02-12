@@ -1,12 +1,13 @@
 # %%
 import numpy as np
 import re
+import string
 
 
 class Preprocessing:
 
     @staticmethod
-    def read_file(file):
+    def read_file_word(file):
 
         # read file in
         with open(file,"r") as f:
@@ -26,6 +27,29 @@ class Preprocessing:
 
         # extract only words
     
+        return text
+
+    @staticmethod
+    def read_file_char(file):
+        letters = list(string.ascii_lowercase + " " + "?")
+        
+        with open(file,"r") as f:
+            raw_txt = f.readlines()
+            
+        raw_txt = [line.lower() for line in raw_txt]
+        
+        text_string = ""
+        
+        for line in raw_txt:
+            text_string += line.strip()
+    
+        text = list()
+        
+        for char in text_string:
+            text.append(char)
+        
+        text = [char for char in text if char in letters]
+        
         return text
     
     @staticmethod
