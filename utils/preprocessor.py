@@ -30,7 +30,7 @@ class Preprocessing:
 
     @staticmethod
     def read_file_char(file):
-        letters = list(string.ascii_lowercase + " ")
+        letters = list(string.ascii_lowercase + " " + ".")
         
         with open(file,"r") as f:
             raw_txt = f.readlines()
