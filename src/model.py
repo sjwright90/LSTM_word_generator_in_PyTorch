@@ -13,6 +13,13 @@ class WordGenerator(nn.Module):
         self.num_classes = vocab_size
         self.sequence_len = args.window
 
+        if torch.has_mps:
+            self.device = torch.device("mps")
+        elif torch.had_cuda:
+            self.device = torch.device("cuda")
+        else:
+            self.device = torch.device("cpu")
+
         # make embeddings
         self.embeddings = nn.Embedding(vocab_size, self.hidden_dim, padding_idx=0)
 
@@ -38,22 +45,20 @@ class WordGenerator(nn.Module):
 
 
     def forward(self, x):
-        if torch.has_mps:
-            mpsdevice = torch.device("mps")
 
         out = self.embeddings(x)
 
         out = out.view(self.sequence_len, x.size(0), -1)
 
         # initialize states as zeros
-        hs_backward = torch.zeros(x.size(0), self.hidden_dim).to(device=mpsdevice)
-        cs_backward = torch.zeros(x.size(0), self.hidden_dim).to(device=mpsdevice)
-        hs_forward = torch.zeros(x.size(0), self.hidden_dim).to(device=mpsdevice)
-        cs_forward = torch.zeros(x.size(0), self.hidden_dim).to(device=mpsdevice)
-        hs_lstm_1 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=mpsdevice)
-        cs_lstm_1 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=mpsdevice)
-        hs_lstm_2 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=mpsdevice)
-        cs_lstm_2 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=mpsdevice)
+        hs_backward = torch.zeros(x.size(0), self.hidden_dim).to(device=self.device)
+        cs_backward = torch.zeros(x.size(0), self.hidden_dim).to(device=self.device)
+        hs_forward = torch.zeros(x.size(0), self.hidden_dim).to(device=self.device)
+        cs_forward = torch.zeros(x.size(0), self.hidden_dim).to(device=self.device)
+        hs_lstm_1 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=self.device)
+        cs_lstm_1 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=self.device)
+        hs_lstm_2 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=self.device)
+        cs_lstm_2 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=self.device)
 
         # initialize weights
 

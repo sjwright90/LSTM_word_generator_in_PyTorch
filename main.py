@@ -118,9 +118,16 @@ class Execution:
                 torch.save(model.state_dict(), self.model_save)
         
     @staticmethod
-    def generator(model, sequences, idx_to_char, n_chars):
+    def generator(model, sequences, idx_to_char, n_chars, char_gen):
 
-        model.to(device=Execution.device)
+        if torch.has_mps:
+            device = torch.device("mps")
+        elif torch.has_cuda:
+            device = torch.device("cuda")
+        else:
+            device = torch.device("cpu")
+        
+        model.to(device=device)
 
         # set model in eval mode
         model.eval()
@@ -135,7 +142,7 @@ class Execution:
         pattern = sequences[start]
 
         #use dictionaries to print the pattern
-        if Execution.char_gen:
+        if char_gen:
             print("\nPattern: \n")
             print("".join(idx_to_char[value] for value in pattern), "\"")
         else:
@@ -151,7 +158,7 @@ class Execution:
         for i in range(n_chars):
 
             # The numpy patterns is transformed into a tesor-type and reshaped
-            pattern = torch.from_numpy(pattern).type(torch.LongTensor).to(Execution.device)
+            pattern = torch.from_numpy(pattern).type(torch.LongTensor).to(device=device)
             pattern = pattern.view(1,-1)
 
             # Make prediction given pattern
@@ -186,7 +193,7 @@ class Execution:
             # The full prediction is saved
             full_prediction = np.append(full_prediction, arg_max)
 
-        if Execution.char_gen:
+        if char_gen:
                 print("Prediction: \n")
                 print("".join([idx_to_char[value] for value in full_prediction]), "\"")
         else:
@@ -216,7 +223,7 @@ if __name__ == "__main__":
                 model.load_state_dict(torch.load(args.model))
 
                 # text generator
-                execution.generator(model, sequences, idx_to_char, 20)
+                execution.generator(model, sequences, idx_to_char, 20, args.char_gen)
         
         # if you will train the model
         else:
@@ -237,4 +244,4 @@ if __name__ == "__main__":
             model.load_state_dict(torch.load("weights/wordGen_model.pt"))
 
             # text generator
-            execution.generator(model, sequences, idx_to_char, 20)
+            execution.generator(model, sequences, idx_to_char, 20, args.char_gen)
