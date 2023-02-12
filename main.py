@@ -175,10 +175,10 @@ class Execution:
             # of predicted classes
             # if probability distribution is not appropriate
             # for np.random.choice then take highest probability
-            try:
-                arg_max = np.random.choice(list(idx_to_char.keys()), p = prediction)
-            except:
-                arg_max = np.argmax(prediction)
+            #try:
+                #arg_max = np.random.choice(list(idx_to_char.keys()), p = prediction)
+            #except:
+            arg_max = np.argmax(prediction)
 
             # The current pattern tensor is transformed into numpy array
             pattern = pattern.to("cpu")
@@ -223,7 +223,7 @@ if __name__ == "__main__":
                 model.load_state_dict(torch.load(args.model))
 
                 # text generator
-                execution.generator(model, sequences, idx_to_char, 20, args.char_gen)
+                execution.generator(model, sequences, idx_to_char, args.num_predict, args.char_gen)
         
         # if you will train the model
         else:
@@ -241,7 +241,7 @@ if __name__ == "__main__":
             # initialize model
             model = WordGenerator(args, vocab_size)
             #load weights
-            model.load_state_dict(torch.load("weights/wordGen_model.pt"))
+            model.load_state_dict(torch.load(args.model))
 
             # text generator
-            execution.generator(model, sequences, idx_to_char, 20, args.char_gen)
+            execution.generator(model, sequences, idx_to_char, args.num_predict, args.char_gen)

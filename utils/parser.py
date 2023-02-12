@@ -13,6 +13,7 @@ def parameter_parser():
     parser.add_argument("--model", dest="model", type=str, default='weights/wordGen_model.pt')
     parser.add_argument("--training_file", dest="file", type=str, default="data/mobyshort.txt")
     parser.add_argument("--char_gen", dest="char_gen", type=bool, default=False)
+    parser.add_argument("--num_predict", dest="num_predict", type=int, default=20)
 
 						 
     return parser.parse_args()
