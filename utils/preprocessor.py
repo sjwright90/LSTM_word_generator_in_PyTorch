@@ -15,18 +15,17 @@ class Preprocessing:
     
         # make lower case
         raw_text = [line.lower() for line in raw_text]
-        raw_text = [re.findall(r"\w+", line) for line in raw_text if len(line)>1]
+        raw_text = [re.findall(r"\w+|\.", line) for line in raw_text if len(line)>1]
 
         text = list()
 
         # concatenate to one long text file
         for line in raw_text:
             for word in line:
-                if len(word) > 1:
+                if len(word) > 0:
                     text.append(word)
 
         # extract only words
-    
         return text
 
     @staticmethod
@@ -84,3 +83,5 @@ class Preprocessing:
 
         return(x,y)
 
+
+# %%
