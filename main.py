@@ -175,10 +175,10 @@ class Execution:
             # of predicted classes
             # if probability distribution is not appropriate
             # for np.random.choice then take highest probability
-            #try:
-                #arg_max = np.random.choice(list(idx_to_char.keys()), p = prediction)
-            #except:
-            arg_max = np.argmax(prediction)
+            try:
+                arg_max = np.random.choice(list(idx_to_char.keys()), p = prediction)
+            except:
+                arg_max = np.argmax(prediction)
 
             # The current pattern tensor is transformed into numpy array
             pattern = pattern.to("cpu")
