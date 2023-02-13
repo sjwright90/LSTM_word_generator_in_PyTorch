@@ -69,7 +69,7 @@ class Execution:
         model.to(device=self.device)
 
         # Initialize optimizer
-        optimizer = optim.Adam(model.parameters(), lr=self.learning_rate, weight_decay=1e-4, amsgrad=True)
+        optimizer = optim.Adam(model.parameters(), lr=self.learning_rate, weight_decay=1e-3, amsgrad=True)
 
         # Defining number of batches
         num_batches = int(len(self.sequences)/self.batch_size)
@@ -106,7 +106,7 @@ class Execution:
                 # back propogate
                 loss.backward()
                 # clip gradient
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 5)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
                 # update parameters
                 optimizer.step()
             print("Epoch: %d,  loss: %.5f " % (epoch, loss.item()))
