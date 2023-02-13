@@ -69,7 +69,7 @@ class Execution:
         model.to(device=self.device)
 
         # Initialize optimizer
-        optimizer = optim.Adam(model.parameters(), lr=self.learning_rate, weight_decay=1e-4, amsgrad=True)
+        optimizer = optim.Adam(model.parameters(), lr=self.learning_rate, weight_decay=1e-4)#, amsgrad=True)
 
         # Defining number of batches
         num_batches = int(len(self.sequences)/self.batch_size)

@@ -90,11 +90,9 @@ class WordGenerator(nn.Module):
             hs_lstm_1, cs_lstm_1 = self.lstm_1(in_tensor, (hs_lstm_1, cs_lstm_1))
             hs_lstm_1 = self.dropout(hs_lstm_1)
             hs_lstm_2, cs_lstm_2 = self.lstm_2(hs_lstm_1, (hs_lstm_2, cs_lstm_2))
+            hs_lstm_2 = self.dropout(hs_lstm_2)
             hs_lstm_3, cs_lstm_3 = self.lstm_3(hs_lstm_2, (hs_lstm_3, cs_lstm_3))
-        
-        # final dropout layer
-        hs_lstm_3 = self.dropout(hs_lstm_3)
-
+            hs_lstm_3 = self.dropout(hs_lstm_3)
 
         # pass to linear layer
         out = self.linear(hs_lstm_3)
