@@ -111,11 +111,22 @@ class Execution:
                 optimizer.step()
             print("Epoch: %d,  loss: %.5f " % (epoch, loss.item()))
             loss_score = loss.item()
+
+            # if model decays break
             if np.isnan(loss_score):
                 break
+
+            # append loss each epoch
             loss_log = loss_log + [loss_score]
+
+            # save state dictionary if loss decreases
             if loss_log[-1] < loss_log[-2]:
                 torch.save(model.state_dict(), self.model_save)
+
+            # early stopping if average loss over 3 epochs does not change
+            if len(loss_log) > 5:
+                if round(sum(loss_log[-1:-4:-1])/3,2) == round(loss_log[-1],2):
+                    break
         
     @staticmethod
     def generator(model, sequences, idx_to_char, n_chars, char_gen):

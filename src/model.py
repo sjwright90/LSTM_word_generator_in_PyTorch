@@ -40,6 +40,9 @@ class WordGenerator(nn.Module):
         # make linear layer
         self.linear = nn.Linear(self.hidden_dim*2, self.num_classes)
 
+        # layer normalization
+        self.lnorm = nn.LayerNorm(self.hidden_dim*2)
+
 
 
     def forward(self, x):
@@ -80,16 +83,20 @@ class WordGenerator(nn.Module):
             hs_backward, cs_backward = self.lstm_backward(out[i], (hs_backward, cs_backward))
             backward.append(hs_backward)
         
+        # dropout 0.2 between LSTM 2 and 3 layers
+        # layer normalization between each layer
         for fwd, bwd in zip(forward, backward):
             in_tensor = torch.cat((fwd, bwd), 1)
             hs_lstm_1, cs_lstm_1 = self.lstm_1(in_tensor, (hs_lstm_1, cs_lstm_2))
-            # dropout 0.2 between two LSTM layers
+            hs_lstm_1 = self.lnorm(hs_lstm_1)
             hs_lstm_1 = self.dropout(hs_lstm_1)
             hs_lstm_2, cs_lstm_2 = self.lstm_2(hs_lstm_1, (hs_lstm_2, cs_lstm_2))
+            hs_lstm_2 = self.lnorm(hs_lstm_2)
             hs_lstm_3, cs_lstm_3 = self.lstm_3(hs_lstm_2, (hs_lstm_3, cs_lstm_3))
         
         # final dropout layer
         hs_lstm_3 = self.dropout(cs_lstm_3)
+
 
         # pass to linear layer
         out = self.linear(hs_lstm_3)
