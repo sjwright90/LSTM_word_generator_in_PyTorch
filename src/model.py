@@ -59,17 +59,17 @@ class WordGenerator(nn.Module):
         cs_forward = torch.zeros(x.size(0), self.hidden_dim).to(device=self.device)
         hs_lstm_1 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=self.device)
         cs_lstm_1 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=self.device)
-        hs_lstm_2 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=self.device)
-        cs_lstm_2 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=self.device)
-        hs_lstm_3 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=self.device)
-        cs_lstm_3 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=self.device)
+        #hs_lstm_2 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=self.device)
+        #cs_lstm_2 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=self.device)
+        #hs_lstm_3 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=self.device)
+        #cs_lstm_3 = torch.zeros(x.size(0), self.hidden_dim*2).to(device=self.device)
 
         # initialize weights
 
         for lay in [hs_backward, cs_backward, hs_forward, cs_forward,
-                    hs_lstm_1, cs_lstm_1,
-                    hs_lstm_2, cs_lstm_2,
-                    hs_lstm_3, cs_lstm_3]:
+                    hs_lstm_1, cs_lstm_1]:
+                    #hs_lstm_2, cs_lstm_2,
+                    #hs_lstm_3, cs_lstm_3]:
             nn.init.xavier_uniform_(lay)
         
         forward = []
@@ -87,18 +87,16 @@ class WordGenerator(nn.Module):
         # layer normalization between each layer
         for fwd, bwd in zip(forward, backward):
             in_tensor = torch.cat((fwd, bwd), 1)
-            hs_lstm_1, cs_lstm_1 = self.lstm_1(in_tensor, (hs_lstm_1, cs_lstm_2))
-            #hs_lstm_1 = self.lnorm(hs_lstm_1)
-            hs_lstm_1 = self.dropout(hs_lstm_1)
-            hs_lstm_2, cs_lstm_2 = self.lstm_2(hs_lstm_1, (hs_lstm_2, cs_lstm_2))
-            #hs_lstm_2 = self.lnorm(hs_lstm_2)
-            hs_lstm_3, cs_lstm_3 = self.lstm_3(hs_lstm_2, (hs_lstm_3, cs_lstm_3))
+            hs_lstm_1, cs_lstm_1 = self.lstm_1(in_tensor, (hs_lstm_1, cs_lstm_1))
+            #hs_lstm_1 = self.dropout(hs_lstm_1)
+            #hs_lstm_2, cs_lstm_2 = self.lstm_2(hs_lstm_1, (hs_lstm_2, cs_lstm_2))
+            #hs_lstm_3, cs_lstm_3 = self.lstm_3(hs_lstm_2, (hs_lstm_3, cs_lstm_3))
         
         # final dropout layer
-        hs_lstm_3 = self.lnorm(cs_lstm_3)
+        hs_lstm_1 = self.dropout(cs_lstm_1)
 
 
         # pass to linear layer
-        out = self.linear(hs_lstm_3)
+        out = self.linear(hs_lstm_1)
         
         return out
