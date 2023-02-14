@@ -1,4 +1,4 @@
-# Nihilistic AI: A Bi-Directional LSTM to write Nietzsche
+# Chasing the Whale: A Bi-Directional LSTM to write Melville
 
 This repository is an implementation of an LSTM recurrent neural network built using PyTorch. The model architecture consists of a bi-directional layer, followed by three LSTM layers with dropout layers between the second and thiird LSTM layer, finally the results are passed to a linear layer. The codebase is set up to automatically move tensors onto and off of a GPU and will check the machine for the appropriate GPU backend (CUDA or MPS). The model uses cross entropy loss, an Adam optimizer, and gradient clipping is applied between the loss.backward() call and the optimizer.step() call. Additionally, the architecture is set up to allow the user to specify if they want to train a character or word model. The model is run through the command line with the following prompt:
 ```
@@ -14,5 +14,10 @@ The model is highly malleable just from the command line input, although certain
 The training function is set up with a two built in early stopping protocols. The model will cease training if any loss value comes back as NaN, a loss of NaN indicates that the model has diverged. The other early stopping kicks in when there is minimal change in loss over time. The loss per epoch is stored and starting at the 5th epoch if the average loss over the last three epochs equals the current loss (rounded to 2 significant figures) the model will stop training.
 
 I trained the model testing a number of different architectures, changing both the layers (quantity and order) as well as hidden dimensions. I also experimented with multiple learning rates, decay rates, windows, batch sizes, and so on. None of the models showed great convergence and predicted outputs tended to be nonesensical. I might get back to tuning the model more at some point down the line.
+
+The model was trained on the first couple chapters of Herman Melville's Mboy-Dick. The text was downloaded from the Gutenburg Project (https://www.gutenberg.org/ebooks/2701) it can be downloaded directly from the command line using:
+```
+% curl https://www.gutenberg.org/files/2701/2701-0.txt --output FILE_NAME.txt
+```
 
 Note: the base code and some of the setup code was borrowed from here: https://github.com/FernandoLpz/Text-Generation-BiLSTM-PyTorch to give credit where credit is due. I recommend checking out his repo and associated blog post.
