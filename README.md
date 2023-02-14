@@ -2,7 +2,7 @@
 
 This repository is an implementation of an LSTM recurrent neural network built using PyTorch. The model architecture consists of a bi-directional layer, followed by three LSTM layers with dropout layers between the second and third LSTM layer, finally the results are passed to a linear layer. 
 
-The scripts are set up to automatically move tensors onto and off of a GPU and will check the machine for the appropriate GPU backend (CUDA or MPS). 
+The scripts are set up to automatically move tensors onto and off of a GPU and will check the machine for the appropriate GPU backend (CUDA or MPS). If no GPU found CPU will be used instead.
 
 The model uses cross entropy loss, an Adam optimizer, and gradient clipping is applied between the loss.backward() call and the optimizer.step() call. 
 
