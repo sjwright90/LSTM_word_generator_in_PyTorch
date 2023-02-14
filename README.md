@@ -15,6 +15,10 @@ The training function is set up with two built in early stopping protocols. The 
 
 I trained the model testing a number of different architectures, changing both the layers (quantity and order) as well as hidden dimensions. I also experimented with multiple learning rates, decay rates, windows, batch sizes, character vs word, and so on. None of the models showed great convergence and predicted outputs tended to be nonesensical. I might get back to tuning the model more at some point down the line but at this point I do not have the time. As my purpose was to experiment with PyTorch LSTM architectures I feel I met that goal.
 
+Example of model output:
+
+![](https://github.com/sjwright90/LSTM_word_generator/blob/main/figs/output.png)
+
 The model was trained on the first couple chapters of Herman Melville's Mboy-Dick. The text was downloaded from the Gutenburg Project (https://www.gutenberg.org/ebooks/2701) it can be downloaded directly from the command line using:
 ```
 % curl https://www.gutenberg.org/files/2701/2701-0.txt --output FILE_NAME.txt
