@@ -1,2 +1,18 @@
-# LSTM_word_generator
- Simple LSTM in PyTorch to generate words
+# Nihilistic AI: A Bi-Directional LSTM to write Nietzsche
+
+This repository is an implementation of an LSTM recurrent neural network built using PyTorch. The model architecture consists of a bi-directional layer, followed by three LSTM layers with dropout layers between the second and thiird LSTM layer, finally the results are passed to a linear layer. The codebase is set up to automatically move tensors onto and off of a GPU and will check the machine for the appropriate GPU backend (CUDA or MPS). The model uses cross entropy loss, an Adam optimizer, and gradient clipping is applied between the loss.backward() call and the optimizer.step() call. Additionally, the architecture is set up to allow the user to specify if they want to train a character or word model. The model is run through the command line with the following prompt:
+```
+ % Python3 -B main.py [--epochs NUM_EPOCHS] [--learning_rate LEARNING_RATE] [--hidden_dim HIDDEN_DIM] [--batch_size BATCH_SIZE] [--window WINDOW]
+               [--load_model LOAD_MODEL] [--model MODEL] [--training_file FILE] [--char_gen CHAR_GEN] [--num_predict NUM_PREDICT]
+```
+Where the main.py is the driver code, epochs is the number of epochs to run the model for accepts int, learning_rate is the learning rate for the Adam optimizer accepts float, hidden_dim is the number of features for the hidden state of the LSTM (also maps to the size of the current state) accepts int, batch_size is the size of the batches (the number of batches will be calculated from the number of sequences divided by batch_size) accepts int, window is the sequence length (the number of trailing characters or letters used to calculate the next character or letter, the division of the document by this value will give the number of sequences) accepts int, load_model is a binary option to predict or train when load_model==True a model will be loaded and a prediction run when False a model will be trained then a prediction made, model is the path directory to the .pt file where the script will save and load the model weights accepts a file pathway as a string, training_file is the text file to train or predict the model on accepts a file pathway as a sting, char_gen tells the model to use characters or words the default is false which is a word model, and num_predict is the number of outputs to predict it accepts an integer.
+
+Model prediction is made using a random selection from the probability distribution of softmax normalized model outputs.
+
+The model is highly malleable just from the command line input, although certain things will be locked in place, such as the model architecture and Adam weight_decay. One can changed these "fixed" values by going into the code itself.
+
+The training function is set up with a two built in early stopping protocols. The model will cease training if any loss value comes back as NaN, a loss of NaN indicates that the model has diverged. The other early stopping kicks in when there is minimal change in loss over time. The loss per epoch is stored and starting at the 5th epoch if the average loss over the last three epochs equals the current loss (rounded to 2 significant figures) the model will stop training.
+
+I trained the model testing a number of different architectures, changing both the layers (quantity and order) as well as hidden dimensions. I also experimented with multiple learning rates, decay rates, windows, batch sizes, and so on. None of the models showed great convergence and predicted outputs tended to be nonesensical. I might get back to tuning the model more at some point down the line.
+
+Note: the base code and some of the setup code was borrowed from here: https://github.com/FernandoLpz/Text-Generation-BiLSTM-PyTorch to give credit where credit is due. I recommend checking out his repo and associated blog post.
