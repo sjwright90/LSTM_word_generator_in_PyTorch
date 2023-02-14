@@ -1,3 +1,4 @@
+'''A python script for testing various functions from the preprocessing module'''
 # %%
 from utils import Preprocessing
 # %%
