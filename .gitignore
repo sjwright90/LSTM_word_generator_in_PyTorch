@@ -25,7 +25,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-data/
+
 .DS_Store
 wordGen_huge_model.pt
 
