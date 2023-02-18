@@ -16,7 +16,7 @@ class WordGenerator(nn.Module):
         if torch.has_mps:
             self.device = torch.device("mps")
             print("gpu active")
-        elif torch.had_cuda:
+        elif torch.has_cuda:
             self.device = torch.device("cuda")
             print("cuda active")
         else:
