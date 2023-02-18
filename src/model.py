@@ -15,10 +15,13 @@ class WordGenerator(nn.Module):
 
         if torch.has_mps:
             self.device = torch.device("mps")
+            print("gpu active")
         elif torch.had_cuda:
             self.device = torch.device("cuda")
+            print("cuda active")
         else:
             self.device = torch.device("cpu")
+            print("no gpu")
 
         # make embeddings
         self.embeddings = nn.Embedding(vocab_size, self.hidden_dim, padding_idx=0)

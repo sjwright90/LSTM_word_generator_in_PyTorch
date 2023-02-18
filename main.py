@@ -33,10 +33,13 @@ class Execution:
 
         if torch.has_mps:
             self.device = torch.device("mps")
+            print("gpu active")
         elif torch.has_cuda:
             self.device = torch.device("cuda")
+            print("cuda active")
         else:
             self.device = torch.device("cpu")
+            print("no gpu")
 
     def prepare_data(self):
 
